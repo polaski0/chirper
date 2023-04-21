@@ -1,6 +1,6 @@
 import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
-import con from './database/Mysql.database.js';
+import { db } from './database/Mysql.database.js';
 
 dotenv.config();
 
@@ -13,7 +13,13 @@ app.get('/', (req: Request, res: Response) => {
 
 app.listen(port, () => {
     console.log(`[server]: Server is running at http://localhost:${port}`);
+
+    // Initializes the database tables.
+    db.createDatabase();
 });
+
+// Creates connection with the database.
+const con = db.con();
 
 con.connect((err) => {
     if (err) {
