@@ -12,7 +12,7 @@ function database() {
                 password: process.env.DB_PASSWORD || '',
             });
 
-            hostCon.query('CREATE DATABASE IF NOT EXISTS chirper', function (error, result, field) {
+            hostCon.query(`CREATE DATABASE IF NOT EXISTS ${process.env.DB_DATABASE}`, function (error, result, field) {
                 if (error) throw error;
                 if (result.affectedRows > 0) {
                     console.log('Database successfully created.');
