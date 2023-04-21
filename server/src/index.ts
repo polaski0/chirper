@@ -1,16 +1,25 @@
 import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
+import con from './database/Mysql.database.js';
 
-dotenv.config({ path: '../.env' });
+dotenv.config();
 
 const app: Express = express();
 const port = process.env.PORT;
 
 app.get('/', (req: Request, res: Response) => {
     res.send('Express + TypeScript Server');
-    console.log(process.env);
 });
 
 app.listen(port, () => {
     console.log(`[server]: Server is running at http://localhost:${port}`);
+});
+
+con.connect((err) => {
+    if (err) {
+        console.error(`[database]: error connecting due to ${err.stack}`);
+        return;
+    }
+
+    console.log(`[database]: connected as ${con.threadId}`);
 });
