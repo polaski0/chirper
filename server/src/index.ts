@@ -1,31 +1,47 @@
 import express, { Express, Request, Response } from 'express';
+import bodyParser from 'body-parser';
+import cors from 'cors';
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
+import session from 'express-session';
+import passport from 'passport';
 import { db } from './database/Mysql.database.js';
+
+import { router as userRoutes } from './routes/users.js';
+import { router as chirpsRoutes } from './routes/chirps.js';
 
 dotenv.config();
 
 const app: Express = express();
 const port = process.env.PORT;
 
-app.get('/', (req: Request, res: Response) => {
-    res.send('Express + TypeScript Server');
-});
+// CORS & Parser
+const corsOptions = {
+    origin: 'http://127.0.0.1:5173',
+    credentials: true,
+};
+
+app.use(cors(corsOptions));
+app.use(cookieParser());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use(session({
+    secret: 'subscribe',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        maxAge: (60 * 60 * 24) * 1000
+    }
+}));
+app.use(passport.authenticate('session'));
+
+// Initializes the database tables.
+db.createDatabase();
 
 app.listen(port, () => {
     console.log(`[server]: Server is running at http://localhost:${port}`);
-
-    // Initializes the database tables.
-    db.createDatabase();
 });
 
-// Creates connection with the database.
-const con = db.con();
-
-con.connect((err) => {
-    if (err) {
-        console.error(`[database]: error connecting due to ${err.stack}`);
-        return;
-    }
-
-    console.log(`[database]: connected as ${con.threadId}`);
-});
+// Routes
+app.use('/', userRoutes);
+app.use('/user', chirpsRoutes);

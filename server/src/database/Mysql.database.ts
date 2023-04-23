@@ -29,7 +29,7 @@ function database() {
         createUserTable() {
             const con = this.con();
 
-            con.query('CREATE TABLE IF NOT EXISTS users(id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, username VARCHAR(255) NOT NULL, email_address VARCHAR(255) NOT NULL, first_name VARCHAR(255) NOT NULL, middle_name VARCHAR(255), last_name VARCHAR(255) NOT NULL, password VARCHAR(255) NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP )', function (error, result, field) {
+            con.query('CREATE TABLE IF NOT EXISTS users(id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, username VARCHAR(255) NOT NULL, email_address VARCHAR(255) NOT NULL, first_name VARCHAR(255) NOT NULL, middle_name VARCHAR(255), last_name VARCHAR(255) NOT NULL, hashed_password VARBINARY(8000) NOT NULL, salt VARBINARY(8000) NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP )', function (error, result, field) {
                 if (error) throw error;
                 if (result.affectedRows > 0) {
                     console.log('Users table successfully created.');
@@ -55,4 +55,5 @@ function database() {
 }
 
 const db = database();
-export { db };
+const con = db.con();
+export { db, con };
