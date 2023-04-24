@@ -1,5 +1,5 @@
 import express, { Express, Request, Response } from 'express';
-import bodyParser from 'body-parser';
+// import bodyParser from 'body-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
@@ -22,18 +22,24 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use(cookieParser());
-app.use(bodyParser.urlencoded({ extended: true }));
+// app.use(bodyParser.urlencoded({ extended: true }));
 
+app.use(cookieParser());
 app.use(session({
-    secret: 'subscribe',
+    name: 'userId',
+    secret: 'keyboard cat',
     resave: false,
     saveUninitialized: false,
     cookie: {
-        maxAge: (60 * 60 * 24) * 1000
+        maxAge: (60 * 60 * 24) * 1000,
+        httpOnly: true,
+        secure: false,
+        sameSite: false
     }
 }));
-app.use(passport.authenticate('session'));
+app.use(passport.initialize());
+app.use(passport.session());
+// app.use(passport.authenticate('session'));
 
 // Initializes the database tables.
 db.createDatabase();

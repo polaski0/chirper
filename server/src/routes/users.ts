@@ -1,5 +1,6 @@
 import express, { NextFunction, Request, Response } from 'express';
 import crypto from 'crypto';
+import bodyParser from 'body-parser';
 import { con } from '../database/Mysql.database.js';
 
 import passport from 'passport';
@@ -8,6 +9,8 @@ import passportLocal from 'passport-local';
 const LocalStrategy = passportLocal.Strategy;
 
 const router = express.Router();
+router.use(express.json());
+router.use(bodyParser.urlencoded({ extended: true }));
 
 passport.use(
     new LocalStrategy(
@@ -33,8 +36,8 @@ passport.use(
 
 passport.serializeUser((user: any, cb) => {
     process.nextTick(() => {
-        cb(null, { id: user.id, username: user.username, first_name: user.first_name, middle_name: user.middle_name, last_name: user.last_name });
-    })
+        cb(null, user);
+    });
 });
 
 passport.deserializeUser((user: any, cb) => {
@@ -45,9 +48,13 @@ passport.deserializeUser((user: any, cb) => {
 
 // Checks user credentials and log in if successful.
 router.post('/login', passport.authenticate('local', {
-    failureRedirect: '/login'
-}), (req: Request, res: Response) => {
-    res.redirect('/login');
+    failureRedirect: '/failed',
+    keepSessionInfo: true,
+}), function (req: Request, res: Response) {
+    console.log('users.ts', req.user);
+    // console.log('users.ts', req.session.id);
+    const { id, username, first_name, middle_name, last_name } = req.session.passport?.user;
+    res.send({ loggedIn: true, user: { id, username, first_name, middle_name, last_name } });
 });
 
 // Creates new user
@@ -65,25 +72,20 @@ router.post('/register', (req: Request, res: Response, next: NextFunction) => {
             salt
         ], function (err) {
             if (err) return next(err);
-            console.log(hashedPassword, salt);
             res.send('Successfully created an account.');
         })
     });
 });
 
-router.get('/login', (req: Request, res: Response) => {
-    if (req.session.passport?.user) {
-        res.send({ loggedIn: true, user: req.session.passport.user });
-    } else {
-        res.send({ loggedIn: false });
-    }
+router.get('/failed', (req: Request, res: Response) => {
+    res.send({ loggedIn: false });
 });
 
 router.post('/logout', (req: Request, res: Response, next: NextFunction) => {
     req.logout(function (err) {
         if (err) return next(err);
 
-        res.redirect('/');
+        res.send({ loggedIn: false });
     })
 });
 
